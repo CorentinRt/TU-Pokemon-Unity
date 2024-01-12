@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace _2023_GC_A2_Partiel_POO.Level_2
 {
@@ -35,6 +36,7 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
             _baseDefense = baseDefense;
             _baseSpeed = baseSpeed;
             _baseType = baseType;
+            CurrentHealth = baseHealth;
         }
         /// <summary>
         /// HP actuel du personnage
@@ -48,7 +50,11 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         {
             get
             {
-                throw new NotImplementedException();
+                if(CurrentEquipment != null)
+                {
+                    return _baseHealth + CurrentEquipment.BonusHealth;
+                }
+                return _baseHealth;
             }
         }
         /// <summary>
@@ -58,7 +64,11 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         {
             get
             {
-                throw new NotImplementedException();
+                if (CurrentEquipment != null)
+                {
+                    return _baseAttack + CurrentEquipment.BonusAttack;
+                }
+                return _baseAttack;
             }
         }
         /// <summary>
@@ -68,7 +78,11 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         {
             get
             {
-                throw new NotImplementedException();
+                if (CurrentEquipment != null)
+                {
+                    return _baseDefense + CurrentEquipment.BonusDefense;
+                }
+                return _baseDefense;
             }
         }
         /// <summary>
@@ -78,7 +92,11 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         {
             get
             {
-                throw new NotImplementedException();
+                if (CurrentEquipment != null)
+                {
+                    return _baseSpeed + CurrentEquipment.BonusSpeed;
+                }
+                return _baseSpeed;
             }
         }
         /// <summary>
@@ -90,7 +108,7 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         /// </summary>
         public StatusEffect CurrentStatus { get; private set; }
 
-        public bool IsAlive => throw new NotImplementedException();
+        public bool IsAlive => CurrentHealth > 0;
 
 
         /// <summary>
@@ -102,7 +120,17 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         /// <exception cref="NotImplementedException"></exception>
         public void ReceiveAttack(Skill s)
         {
-            throw new NotImplementedException();
+            float typeFactor = TypeResolver.GetFactor(s.Type, _baseType);
+            float tempCurrentHealth = CurrentHealth;
+            if(Defense <= s.Power * typeFactor)
+            {
+                tempCurrentHealth -= (s.Power * typeFactor) - Defense;
+                CurrentHealth = (int)tempCurrentHealth;
+                if(CurrentHealth < 0)
+                {
+                    CurrentHealth = 0;
+                }
+            }
         }
         /// <summary>
         /// Equipe un objet au personnage
@@ -111,15 +139,38 @@ namespace _2023_GC_A2_Partiel_POO.Level_2
         /// <exception cref="ArgumentNullException">Si equipement est null</exception>
         public void Equip(Equipment newEquipment)
         {
-            throw new NotImplementedException();
+            if(newEquipment ==  null)
+            {
+                throw new ArgumentNullException();
+            }
+            else
+            {
+                CurrentEquipment = newEquipment;
+            }
         }
         /// <summary>
         /// Desequipe l'objet en cours au personnage
         /// </summary>
         public void Unequip()
         {
-            throw new NotImplementedException();
+            CurrentEquipment = null;
         }
 
+        /// !!!!!!!!!!!!!! Ajout !!!!!!!!!!!!!!!!!!!!
+        
+        /// <summary>
+        /// Soigne le personnage d'un nombre de pv donné (ne dépasse pas pv max et ne fonctionne pas si mort)
+        /// </summary>
+        public void Heal(int healValue)
+        {
+            if (IsAlive)
+            {
+                CurrentHealth += healValue;
+                if (CurrentHealth > MaxHealth)
+                {
+                    CurrentHealth = MaxHealth;
+                }
+            }
+        }
     }
 }
